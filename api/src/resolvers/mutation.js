@@ -19,7 +19,7 @@ module.exports = {
     const uploadedImageUrl = await imageUpload(args.file);
 
     try {
-      await models.Photo.create({
+      return await models.Photo.create({
         url: uploadedImageUrl,
         caption: args.caption,
         user: mongoose.Types.ObjectId(user.id),
