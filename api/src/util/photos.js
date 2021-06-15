@@ -1,23 +1,33 @@
 const cloudinary = require('cloudinary');
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+const { v4: uuidv4 } = require('uuid');
 
-const imageUpload = async imageFile => {
-  try {
-    const { createReadStream } = await imageFile;
-    const stream = createReadStream();
-    const cloudinaryResponse = await cloudinary.uploader.upload(stream.path, {
-      folder: 'my-folder'
-    });
-    return cloudinaryResponse.eager[0].secure_url;
-  } catch (error) {
-    throw new Error(
-      'There was a problem uploading your image. Please try again.'
+const imageUpload = async file => {
+  const { createReadStream, filename } = await file;
+  const fileStream = createReadStream();
+
+  cloudinary.v2.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+
+  return new Promise((resolve, reject) => {
+    const cloudStream = cloudinary.v2.uploader.upload_stream(
+      {
+        allowed_formats: ['jpg', 'png', 'heic', 'heif', 'jpeg'],
+        public_id: `image_uploads/${filename}_${uuidv4()}`,
+        folder: 'insta_clone'
+      },
+      (err, fileUploaded) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(fileUploaded.secure_url);
+      }
     );
-  }
+
+    fileStream.pipe(cloudStream);
+  });
 };
 
 module.exports = imageUpload;

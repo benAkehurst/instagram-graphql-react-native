@@ -13,52 +13,52 @@ const imageUpload = require('../util/photos');
 module.exports = {
   uploadPhoto: async (parent, args, { models, user }) => {
     if (!user) {
-      throw new AuthenticationError('You must be signed in to create a note');
+      throw new AuthenticationError('You must be signed in to upload a photo');
     }
 
-    return await models.Photo.create({
-      url: await imageUpload(args.imageFile),
-      caption: args.caption,
-      user: mongoose.Types.ObjectId(user.id),
-      favoriteCount: 0
-    });
+    const uploadedImageUrl = await imageUpload(args.file);
+
+    try {
+      await models.Photo.create({
+        url: uploadedImageUrl,
+        caption: args.caption,
+        user: mongoose.Types.ObjectId(user.id),
+        favoriteCount: 0
+      });
+    } catch (err) {
+      throw new Error('Error uploading image');
+    }
   },
   deletePhoto: async (parent, { id }, { models, user }) => {
-    // if not a user, throw an Authentication Error
     if (!user) {
-      throw new AuthenticationError('You must be signed in to delete a note');
+      throw new AuthenticationError('You must be signed in to delete a photo');
     }
-
-    // find the note
     const photo = await models.Photo.findById(id);
-    // if the note owner and current user don't match, throw a forbidden error
     if (photo && String(photo.author) !== user.id) {
-      throw new ForbiddenError("You don't have permissions to delete the note");
+      throw new ForbiddenError(
+        "You don't have permissions to delete the photo"
+      );
     }
 
     try {
-      // if everything checks out, remove the note
       await photo.remove();
       return true;
     } catch (err) {
-      // if there's an error along the way, return false
       return false;
     }
   },
   updatePhoto: async (parent, { caption, id }, { models, user }) => {
-    // if not a user, throw an Authentication Error
     if (!user) {
-      throw new AuthenticationError('You must be signed in to update a note');
+      throw new AuthenticationError('You must be signed in to update a photo');
     }
 
-    // find the note
     const photo = await models.Photo.findById(id);
-    // if the note owner and current user don't match, throw a forbidden error
     if (photo && String(photo.author) !== user.id) {
-      throw new ForbiddenError("You don't have permissions to update the note");
+      throw new ForbiddenError(
+        "You don't have permissions to update the photo"
+      );
     }
 
-    // Update the note in the db and return the updated note
     return await models.Photo.findOneAndUpdate(
       {
         _id: id
@@ -74,17 +74,13 @@ module.exports = {
     );
   },
   toggleFavorite: async (parent, { id }, { models, user }) => {
-    // if no user context is passed, throw auth error
     if (!user) {
       throw new AuthenticationError();
     }
 
-    // check to see if the user has already favorited the note
     let photoCheck = await models.Photo.findById(id);
     const hasUser = photoCheck.favoritedBy.indexOf(user.id);
 
-    // if the user exists in the list
-    // pull them from the list and reduce the favoriteCount by 1
     if (hasUser >= 0) {
       return await models.Photo.findByIdAndUpdate(
         id,
@@ -97,13 +93,10 @@ module.exports = {
           }
         },
         {
-          // Set new to true to return the updated doc
           new: true
         }
       );
     } else {
-      // if the user doesn't exists in the list
-      // add them to the list and increment the favoriteCount by 1
       return await models.Photo.findByIdAndUpdate(
         id,
         {
@@ -121,11 +114,8 @@ module.exports = {
     }
   },
   signUp: async (parent, { username, email, password }, { models }) => {
-    // normalize email address
     email = email.trim().toLowerCase();
-    // hash the password
     const hashed = await bcrypt.hash(password, 10);
-    // create the gravatar url
     const avatar = gravatar(email);
     try {
       const user = await models.User.create({
@@ -135,16 +125,13 @@ module.exports = {
         password: hashed
       });
 
-      // create and return the json web token
       return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     } catch (err) {
-      // if there's a problem creating the account, throw an error
       throw new Error('Error creating account');
     }
   },
   signIn: async (parent, { username, email, password }, { models }) => {
     if (email) {
-      // normalize email address
       email = email.trim().toLowerCase();
     }
 
@@ -152,18 +139,15 @@ module.exports = {
       $or: [{ email }, { username }]
     });
 
-    // if no user is found, throw an authentication error
     if (!user) {
       throw new AuthenticationError('Error signing in');
     }
 
-    // if the passwords don't match, throw an authentication error
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
       throw new AuthenticationError('Error signing in');
     }
 
-    // create and return the json web token
     return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
   }
 };
