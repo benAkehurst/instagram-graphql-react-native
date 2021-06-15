@@ -5,78 +5,60 @@ const {
   ForbiddenError
 } = require('apollo-server-express');
 const mongoose = require('mongoose');
-const cloudinary = require('cloudinary');
 require('dotenv').config();
 
 const gravatar = require('../util/gravatar');
+const uploadPhoto = require('../util/photos');
 
 module.exports = {
-  uploadPhoto: async (_, { photo }) => {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET
-    });
-
-    try {
-      const result = await cloudinary.v2.uploader.upload(photo, {
-        allowed_formats: ['jpg', 'png'],
-        public_id: '',
-        folder: 'insta-clone'
-      });
-      return `Successful-Photo URL: ${result.url}`;
-    } catch (e) {
-      return `Image could not be uploaded:${e.message}`;
-    }
-  },
-  newNote: async (parent, args, { models, user }) => {
+  newPhoto: async (parent, args, { models, user }) => {
     if (!user) {
       throw new AuthenticationError('You must be signed in to create a note');
     }
 
-    return await models.Note.create({
+    return await models.Photo.create({
       content: args.content,
       author: mongoose.Types.ObjectId(user.id),
       favoriteCount: 0
     });
   },
-  deleteNote: async (parent, { id }, { models, user }) => {
+  deletePhoto: async (parent, { id }, { models, user }) => {
     // if not a user, throw an Authentication Error
     if (!user) {
       throw new AuthenticationError('You must be signed in to delete a note');
     }
 
     // find the note
-    const note = await models.Note.findById(id);
+    const photo = await models.Photo.findById(id);
     // if the note owner and current user don't match, throw a forbidden error
-    if (note && String(note.author) !== user.id) {
+    if (photo && String(photo.author) !== user.id) {
       throw new ForbiddenError("You don't have permissions to delete the note");
     }
 
     try {
       // if everything checks out, remove the note
-      await note.remove();
+      await photo.remove();
       return true;
     } catch (err) {
       // if there's an error along the way, return false
       return false;
     }
   },
-  updateNote: async (parent, { content, id }, { models, user }) => {
+  updatePhoto: async (parent, { content, id }, { models, user }) => {
     // if not a user, throw an Authentication Error
     if (!user) {
       throw new AuthenticationError('You must be signed in to update a note');
     }
 
     // find the note
-    const note = await models.Note.findById(id);
+    const photo = await models.Photo.findById(id);
     // if the note owner and current user don't match, throw a forbidden error
-    if (note && String(note.author) !== user.id) {
+    if (photo && String(photo.author) !== user.id) {
       throw new ForbiddenError("You don't have permissions to update the note");
     }
 
     // Update the note in the db and return the updated note
-    return await models.Note.findOneAndUpdate(
+    return await models.Photo.findOneAndUpdate(
       {
         _id: id
       },
@@ -97,13 +79,13 @@ module.exports = {
     }
 
     // check to see if the user has already favorited the note
-    let noteCheck = await models.Note.findById(id);
-    const hasUser = noteCheck.favoritedBy.indexOf(user.id);
+    let photoCheck = await models.Photo.findById(id);
+    const hasUser = photoCheck.favoritedBy.indexOf(user.id);
 
     // if the user exists in the list
     // pull them from the list and reduce the favoriteCount by 1
     if (hasUser >= 0) {
-      return await models.Note.findByIdAndUpdate(
+      return await models.Photo.findByIdAndUpdate(
         id,
         {
           $pull: {
@@ -121,7 +103,7 @@ module.exports = {
     } else {
       // if the user doesn't exists in the list
       // add them to the list and increment the favoriteCount by 1
-      return await models.Note.findByIdAndUpdate(
+      return await models.Photo.findByIdAndUpdate(
         id,
         {
           $push: {
