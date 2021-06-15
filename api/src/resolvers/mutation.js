@@ -8,17 +8,18 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const gravatar = require('../util/gravatar');
-const uploadPhoto = require('../util/photos');
+const imageUpload = require('../util/photos');
 
 module.exports = {
-  newPhoto: async (parent, args, { models, user }) => {
+  uploadPhoto: async (parent, args, { models, user }) => {
     if (!user) {
       throw new AuthenticationError('You must be signed in to create a note');
     }
 
     return await models.Photo.create({
-      content: args.content,
-      author: mongoose.Types.ObjectId(user.id),
+      url: await imageUpload(args.imageFile),
+      caption: args.caption,
+      user: mongoose.Types.ObjectId(user.id),
       favoriteCount: 0
     });
   },
@@ -44,7 +45,7 @@ module.exports = {
       return false;
     }
   },
-  updatePhoto: async (parent, { content, id }, { models, user }) => {
+  updatePhoto: async (parent, { caption, id }, { models, user }) => {
     // if not a user, throw an Authentication Error
     if (!user) {
       throw new AuthenticationError('You must be signed in to update a note');
@@ -64,7 +65,7 @@ module.exports = {
       },
       {
         $set: {
-          content
+          caption
         }
       },
       {
