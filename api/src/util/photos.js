@@ -1,7 +1,7 @@
 const cloudinary = require('cloudinary');
 const { v4: uuidv4 } = require('uuid');
 
-const imageUpload = async file => {
+const imageUpload = async (file, uploadLocation, userId) => {
   const { createReadStream, filename } = await file;
   const fileStream = createReadStream();
 
@@ -15,7 +15,10 @@ const imageUpload = async file => {
     const cloudStream = cloudinary.v2.uploader.upload_stream(
       {
         allowed_formats: ['jpg', 'png', 'heic', 'heif', 'jpeg'],
-        public_id: `image_uploads/${filename}_${uuidv4()}`,
+        public_id:
+          uploadLocation === 'image'
+            ? `image_uploads/${filename}_${uuidv4()}`
+            : `avatar_uploads/${filename}_${userId}`,
         folder: 'insta_clone'
       },
       (err, fileUploaded) => {

@@ -41,7 +41,8 @@ module.exports = gql`
   type Mutation {
     uploadPhoto(file: Upload!, caption: String!): Photo
     deletePhoto(id: ID!): Boolean!
-    updatePhoto(id: ID!, caption: String): Photo!
+    updatePhotoCaption(id: ID!, caption: String): Photo!
+    updateUserAvatar(id: ID!, file: Upload!): String
     toggleFavorite(id: ID!): Photo!
     signUp(username: String!, email: String!, password: String!): String!
     signIn(username: String, email: String, password: String!): String!

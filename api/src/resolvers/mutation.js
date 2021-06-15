@@ -16,7 +16,7 @@ module.exports = {
       throw new AuthenticationError('You must be signed in to upload a photo');
     }
 
-    const uploadedImageUrl = await imageUpload(args.file);
+    const uploadedImageUrl = await imageUpload(args.file, 'image');
 
     try {
       return await models.Photo.create({
@@ -47,7 +47,7 @@ module.exports = {
       return false;
     }
   },
-  updatePhoto: async (parent, { caption, id }, { models, user }) => {
+  updatePhotoCaption: async (parent, { caption, id }, { models, user }) => {
     if (!user) {
       throw new AuthenticationError('You must be signed in to update a photo');
     }
@@ -72,6 +72,31 @@ module.exports = {
         new: true
       }
     );
+  },
+  updateUserAvatar: async (parent, args, { models, user }) => {
+    if (!user) {
+      throw new AuthenticationError(
+        'You must be signed in to update an avatar'
+      );
+    }
+
+    const updatedAvatar = await imageUpload(args.file, 'avatar', user.id);
+    console.log('updatedAvatar: ', updatedAvatar);
+
+    await models.User.findOneAndUpdate(
+      {
+        _id: user.id
+      },
+      {
+        $set: {
+          avatar: updatedAvatar
+        }
+      },
+      {
+        new: true
+      }
+    );
+    return models.User.findById({ _id: user.id });
   },
   toggleFavorite: async (parent, { id }, { models, user }) => {
     if (!user) {
