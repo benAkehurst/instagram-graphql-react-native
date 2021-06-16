@@ -42,7 +42,7 @@ module.exports = gql`
     uploadPhoto(file: Upload!, caption: String!): Photo
     deletePhoto(id: ID!): Boolean!
     updatePhotoCaption(id: ID!, caption: String): Photo!
-    updateUserAvatar(id: ID!, file: Upload!): String
+    updateUserAvatar(id: ID!, file: Upload!): User
     toggleFavorite(id: ID!): Photo!
     signUp(username: String!, email: String!, password: String!): String!
     signIn(username: String, email: String, password: String!): String!
