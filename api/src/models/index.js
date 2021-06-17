@@ -1,8 +1,8 @@
-const Note = require('./note');
+const Photo = require('./photo');
 const User = require('./user');
 
 const models = {
-  Note,
+  Photo,
   User
 };
 

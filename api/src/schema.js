@@ -3,18 +3,19 @@ const { gql } = require('apollo-server-express');
 module.exports = gql`
   scalar DateTime
 
-  type Note {
+  type Photo {
     id: ID!
-    content: String!
-    author: User!
+    url: String!
+    user: User!
+    caption: String!
     favoriteCount: Int!
     favoritedBy: [User]
     createdAt: DateTime!
     updatedAt: DateTime!
   }
 
-  type NoteFeed {
-    notes: [Note]!
+  type PhotoFeed {
+    photos: [Photo]!
     cursor: String!
     hasNextPage: Boolean!
   }
@@ -24,25 +25,25 @@ module.exports = gql`
     username: String!
     email: String!
     avatar: String
-    notes: [Note!]!
-    favorites: [Note!]!
+    photos: [Photo!]!
+    favorites: [Photo!]!
   }
 
   type Query {
-    notes: [Note!]!
-    note(id: ID): Note!
-    noteFeed(cursor: String): NoteFeed
+    photos: [Photo!]!
+    photo(id: ID): Photo!
+    photoFeed(cursor: String): PhotoFeed
     user(username: String!): User
     users: [User!]!
     me: User!
   }
 
   type Mutation {
-    uploadPhoto(photo: String): String
-    newNote(content: String!): Note
-    updateNote(id: ID!, content: String!): Note!
-    deleteNote(id: ID!): Boolean!
-    toggleFavorite(id: ID!): Note!
+    uploadPhoto(file: Upload!, caption: String!): Photo
+    deletePhoto(id: ID!): Boolean!
+    updatePhotoCaption(id: ID!, caption: String): Photo!
+    updateUserAvatar(id: ID!, file: Upload!): User
+    toggleFavorite(id: ID!): Photo!
     signUp(username: String!, email: String!, password: String!): String!
     signIn(username: String, email: String, password: String!): String!
   }
