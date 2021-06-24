@@ -26,7 +26,7 @@ const Feed = (props) => {
   if (error) return <Text>Error loading notes</Text>;
   // if the query is successful and there are notes, return the feed of notes
   // return <NoteFeed notes={data.notes} navigation={props.navigation} />;
-  return <Text>{data.me.username}</Text>;
+  return <Text>Username: {data.me.username}</Text>;
 };
 
 Feed.navigationOptions = {
