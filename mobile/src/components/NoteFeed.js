@@ -5,18 +5,28 @@ import styled from 'styled-components/native';
 import NoteComponent from './Note';
 
 // our dummy data
-// const notes = [
-//   { id: 0, content: 'Giant Steps' },
-//   { id: 1, content: 'Tomorrow Is The Question' },
-//   { id: 2, content: 'Tonight At Noon' },
-//   { id: 3, content: 'Out To Lunch' },
-//   { id: 4, content: 'Green Street' },
-//   { id: 5, content: 'In A Silent Way' },
-//   { id: 6, content: 'Lanquidity' },
-//   { id: 7, content: 'Nuff Said' },
-//   { id: 8, content: 'Nova' },
-//   { id: 9, content: 'The Awakening' }
-// ];
+const photos = [
+  {
+    id: 0,
+    url:
+      'https://res.cloudinary.com/dgijgcseu/image/upload/v1624532018/insta_clone/image_uploads/cool-icon.jpg_f3395157-e3f1-40bc-8df6-b020d06beaa8.jpg',
+    caption: 'Nice Icon',
+    createdAt: '2021-06-24T10:53:38.648+00:00',
+    user: {
+      username: 'ben',
+    },
+  },
+  {
+    id: 1,
+    url:
+      'https://res.cloudinary.com/dgijgcseu/image/upload/v1624532018/insta_clone/image_uploads/cool-icon.jpg_f3395157-e3f1-40bc-8df6-b020d06beaa8.jpg',
+    caption: 'Nice Icon',
+    createdAt: '2021-06-24T10:53:38.648+00:00',
+    user: {
+      username: 'ben',
+    },
+  },
+];
 
 // FeedView styled-component definition
 const FeedView = styled.View`
@@ -31,23 +41,23 @@ const Separator = styled.View`
   background-color: #ced0ce;
 `;
 
-const NoteFeed = props => {
+const NoteFeed = (props) => {
   return (
     <View>
       <FlatList
-        data={props.notes}
-        keyExtractor={item => item.id.toString()}
+        data={photos}
+        keyExtractor={(item) => item.id.toString()}
         ItemSeparatorComponent={() => <Separator />}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() =>
               props.navigation.navigate('Note', {
-                id: item.id
+                id: item.id,
               })
             }
           >
             <FeedView>
-              <NoteComponent note={item} />
+              <NoteComponent photo={item} />
             </FeedView>
           </TouchableOpacity>
         )}
